@@ -1,3 +1,5 @@
+// parser.rs
+
 use crate::ast::Expr;
 use crate::lexer::Token;
 
@@ -8,6 +10,11 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
+        let tokens: Vec<Token> = tokens
+            .into_iter()
+            .filter(|t| !matches!(t, Token::Whitespace))
+            .collect();
+
         Parser { tokens, pos: 0 }
     }
 
@@ -29,7 +36,9 @@ impl Parser {
         // Parse a primary expression first
         let first = match self.next() {
             Some(Token::Number(s)) => {
-                let n: f64 = s.parse().map_err(|e| format!("Invalid number '{}': {}", s, e))?;
+                let n: f64 = s
+                    .parse()
+                    .map_err(|e| format!("Invalid number '{}': {}", s, e))?;
                 Expr::Number(n)
             }
             Some(Token::Symbol(s)) => {
@@ -52,6 +61,7 @@ impl Parser {
                 return Err("Unclosed '(' — reached end of input".to_string());
             }
             Some(Token::RParen) => return Err("Unexpected ')'".to_string()),
+            Some(Token::Whitespace) => return Err("Unexpected whitespace token".to_string()),
             None => return Err("Unexpected end of input".to_string()),
         };
 
@@ -62,18 +72,21 @@ impl Parser {
                 let mut operands: Vec<Expr> = vec![first.clone()];
                 let mut ops: Vec<String> = Vec::new();
 
-                // try to collect (op, rhs) pairs
+                // collect (op, rhs) pairs greedily, but only when the next token is a Symbol
                 loop {
-                    // if next token is a Symbol, consume it and parse rhs
-                    if let Some(Token::Symbol(op)) = self.peek().cloned() {
-                        // consume operator
-                        self.next();
-                        // parse rhs expression
-                        let rhs = self.parse_expr()?;
-                        ops.push(op);
-                        operands.push(rhs);
-                    } else {
-                        break;
+                    match self.peek() {
+                        Some(Token::Symbol(_)) => {
+                            // consume operator symbol
+                            let op = match self.next() {
+                                Some(Token::Symbol(s)) => s,
+                                _ => unreachable!(),
+                            };
+                            // parse rhs expression
+                            let rhs = self.parse_expr()?;
+                            ops.push(op);
+                            operands.push(rhs);
+                        }
+                        _ => break,
                     }
                 }
 
@@ -88,7 +101,7 @@ impl Parser {
                     list.extend(operands.into_iter());
                     Ok(Expr::List(list))
                 } else {
-                    // multiple operators: ensure they are all the same
+                    // multiple operators: ensure they are all the same (left-assoc, same-op only)
                     let all_same = ops.iter().all(|o| o == &ops[0]);
                     if all_same {
                         let op0 = ops[0].clone();
@@ -112,8 +125,22 @@ impl Parser {
 pub fn parse(tokens: Vec<Token>) -> Result<Expr, String> {
     let mut p = Parser::new(tokens);
     let expr = p.parse_expr()?;
-    if p.peek().is_some() {
-        return Err("Extra tokens after first expression".to_string());
+
+    // Ensure we've consumed all tokens; if anything remains, report where we stopped.
+    if let Some(remaining) = p.peek() {
+        // Give a clearer message for debugging leftover tokens
+        let kind = match remaining {
+            Token::LParen => "('(')".to_string(),
+            Token::RParen => "')'".to_string(),
+            Token::Number(n) => format!("number `{}`", n),
+            Token::Symbol(s) => format!("symbol `{}`", s),
+            Token::Whitespace => "whitespace".to_string(),
+        };
+        return Err(format!(
+            "Extra tokens after first expression (next token: {})",
+            kind
+        ));
     }
+
     Ok(expr)
 }

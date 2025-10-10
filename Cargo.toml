@@ -1,5 +1,7 @@
+# Cargo.toml
+
 [package]
-name = "lispy"
+name = "yelra"
 version = "0.1.0"
 edition = "2024"
 

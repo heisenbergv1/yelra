@@ -1,3 +1,5 @@
+// lexer.rs
+
 use logos::Logos;
 
 #[derive(Logos, Debug, Clone, PartialEq)]
@@ -11,11 +13,11 @@ pub enum Token {
     #[regex(r"-?[0-9]+(\.[0-9]+)?", |lex| lex.slice().to_string(), priority = 3)]
     Number(String),
 
-    // Symbols (operators and identifiers)
-    #[regex(r"[A-Za-z_+\-*/=<>!][A-Za-z0-9_+\-*/=<>!]*", |lex| lex.slice().to_string())]
+    // Operators and Identifiers (merged into one Symbol variant)
+    #[regex(r"[+\-*/=<>!]+|[A-Za-z_][A-Za-z0-9_]*", |lex| lex.slice().to_string(), priority = 2)]
     Symbol(String),
 
-    // A variant matched by logos; we'll drop instances of it inside tokenize()
+    // Skip whitespace
     #[regex(r"[ \t\r\n]+", logos::skip)]
     Whitespace,
 }
@@ -26,8 +28,6 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, String> {
 
     while let Some(res) = lexer.next() {
         match res {
-            // logos::skip should skip, but some logos versions may still yield the variant.
-            // defensively ignore it here.
             Ok(Token::Whitespace) => continue,
             Ok(tok) => tokens.push(tok),
             Err(_) => {

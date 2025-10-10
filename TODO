@@ -1,0 +1,55 @@
+PS C:\Users\admin\Documents\workspace\yelra> just dev
+cargo fmt --all
+cargo clippy --all-targets --all-features -- -D warnings
+    Checking yelra v0.1.0 (C:\Users\admin\Documents\workspace\yelra)
+error: this loop could be written as a `while let` loop
+  --> src\parser.rs:76:17
+   |
+76 | /                 loop {
+77 | |                     match self.peek() {
+78 | |                         Some(Token::Symbol(_)) => {
+...  |
+91 | |                 }
+   | |_________________^ help: try: `while let Some(Token::Symbol(_)) = self.peek() { .. }`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#while_let_loop
+   = note: `-D clippy::while-let-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::while_let_loop)]`
+
+error: explicit call to `.into_iter()` in function argument accepting `IntoIterator`
+   --> src\parser.rs:101:33
+    |
+101 |                     list.extend(operands.into_iter());
+    |                                 ^^^^^^^^------------
+    |                                         |
+    |                                         help: consider removing the `.into_iter()`
+    |
+note: this parameter accepts any `IntoIterator`, so you don't need to call `.into_iter()`
+   --> C:\Users\admin\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib/rustlib/src/rust\library\core\src\iter\traits\collect.rs:413:18
+    |
+413 |     fn extend<T: IntoIterator<Item = A>>(&mut self, iter: T);
+    |                  ^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#useless_conversion
+    = note: `-D clippy::useless-conversion` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_conversion)]`
+
+error: explicit call to `.into_iter()` in function argument accepting `IntoIterator`
+   --> src\parser.rs:110:37
+    |
+110 |                         list.extend(operands.into_iter());
+    |                                     ^^^^^^^^------------
+    |                                             |
+    |                                             help: consider removing the `.into_iter()`
+    |
+note: this parameter accepts any `IntoIterator`, so you don't need to call `.into_iter()`
+   --> C:\Users\admin\.rustup\toolchains\stable-x86_64-pc-windows-msvc\lib/rustlib/src/rust\library\core\src\iter\traits\collect.rs:413:18
+    |
+413 |     fn extend<T: IntoIterator<Item = A>>(&mut self, iter: T);
+    |                  ^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#useless_conversion
+
+error: could not compile `yelra` (bin "yelra") due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `yelra` (bin "yelra" test) due to 3 previous errors
+error: Recipe `clippy` failed on line 36 with exit code 1
+PS C:\Users\admin\Documents\workspace\yelra>

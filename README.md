@@ -320,6 +320,8 @@ We love precise experiments and sharp edges. To contribute:
 * [ ] 0.10 Interop (Rust/C/WASM/TS)
 * [ ] 1.0 Spec + stabilization
 
+---
+
 # Comparative Landscape: yelra vs. Today’s Majors
 
 > This section is standalone—drop it into the README as-is. It frames where yelra sits relative to C, C++, C#, Java, JavaScript/TypeScript, and Python, focusing on memory, concurrency, effects, protocols/typestate, units/time, interop, and build determinism.
