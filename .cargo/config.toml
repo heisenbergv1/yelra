@@ -1,0 +1,6 @@
+# .cargo/config.toml   (create the folder/file if missing)
+
+[target.x86_64-pc-windows-msvc]
+# # linker = "rust-lld.exe"
+# linker = "lld-link.exe"
+linker = "link.exe"
